@@ -3,8 +3,11 @@ import { prisma } from '@/src/lib/prisma'
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { setCookie } from 'nookies'
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if(req.method !== 'POST') {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse,
+) {
+  if (req.method !== 'POST') {
     return res.status(405).end()
   }
 
@@ -12,19 +15,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const userExists = await prisma.user.findUnique({
     where: {
-      username
-    }
+      username,
+    },
   })
 
-  if(userExists) {
-    return res.status(400).json({ message: 'User already exists'})
+  if (userExists) {
+    return res.status(400).json({ message: 'User already exists' })
   }
 
   const user = await prisma.user.create({
     data: {
       name,
-      username
-    }
+      username,
+    },
   })
 
   setCookie({ res }, '@ignitecall:userId', user.id, {

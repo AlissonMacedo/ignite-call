@@ -1,27 +1,21 @@
-import { Button, Heading, MultiStep, Text, TextInput } from "@ignite-ui/react";
-import { Container, Header } from "../styles";
-import { ArrowRight } from "phosphor-react";
-import { z } from "zod";
-import { ConnectBox, ConnectItem } from "./styles";
-import { signIn } from "next-auth/react";
+import { Button, Heading, MultiStep, Text } from '@ignite-ui/react'
+import { Container, Header } from '../styles'
+import { ArrowRight, Check } from 'phosphor-react'
 
-
-const registerFormSchema = z.object({
-  username: z.string()
-  .min(3, { message: 'O usuário precisa ter pelo menos 3 letras.' })
-  .regex(/^([a-z\\-]+)$/i, { message: 'O usuario pode ter apenas letras e hifens.'})
-  .transform((username) => username.toLocaleLowerCase()),
-  name: z.string().min(3, { message: 'O nome preicsa ter pelo menos 3 letras.'})
-})
-
-type RegisterFormData = z.infer<typeof registerFormSchema>
+import { AuthError, ConnectBox, ConnectItem } from './styles'
+import { signIn, useSession } from 'next-auth/react'
+import { useRouter } from 'next/router'
 
 export default function Register() {
+  const session = useSession()
+  const router = useRouter()
 
+  const isSignedIn = session.status === 'authenticated'
+  const hasAuthError = !!router.query.error
 
-  async function handleRegister(data: RegisterFormData) {
+  async function handleConnectCalendar() {
+    await signIn('google')
   }
-
 
   return (
     <Container>
@@ -37,11 +31,30 @@ export default function Register() {
       <ConnectBox>
         <ConnectItem>
           <Text>Google Calendar</Text>
-          <Button variant="secondary" size="sm" onClick={() => signIn('google')}>Conectar
-            <ArrowRight />
-          </Button>
+          {isSignedIn ? (
+            <Button size="sm" disabled>
+              Conectado
+              <Check />
+            </Button>
+          ) : (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleConnectCalendar}
+              // disabled={session.data.}
+            >
+              Conectar
+              <ArrowRight />
+            </Button>
+          )}
         </ConnectItem>
-        <Button type="submit">
+        {hasAuthError && (
+          <AuthError size="sm">
+            Falha ao se conectar ao Goggle, verifique se você habilitou as
+            permissões de acesso ao Google Calendar
+          </AuthError>
+        )}
+        <Button type="submit" disabled={!isSignedIn}>
           Próximo passo
           <ArrowRight />
         </Button>
